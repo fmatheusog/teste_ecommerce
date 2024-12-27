@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using System.Text;
 using Teste.Application.Abstractions;
 using Teste.Infrastructure.Context;
 using Teste.Infrastructure.Entities;
@@ -11,7 +13,11 @@ using Teste.Shared.Models;
 
 namespace Teste.Application.Services;
 
-public class OrderService(AppDbContext context, IMapper mapper, ILogger logger) : IOrderService
+public class OrderService(
+    AppDbContext context,
+    IMapper mapper,
+    ILogger<OrderService> logger,
+    HttpClient httpClient) : IOrderService
 {
     public Task<OrderModel> EditOrderAsync()
     {
@@ -78,22 +84,68 @@ public class OrderService(AppDbContext context, IMapper mapper, ILogger logger) 
                 Discounts = decimal.Round(customer.Category.GetDiscountAmount(subTotal), 2),
             };
 
-            order.Total = decimal.Round(subTotal - order.Discounts);
+            order.Total = decimal.Round(subTotal - order.Discounts, 2);
 
             await context.Database.BeginTransactionAsync();
             await context.AddAsync(order);
             await context.SaveChangesAsync();
             await context.Database.CommitTransactionAsync();
 
+            await ProcessExternalInvoicing(order);
+
             var orderModel = mapper.Map<OrderModel>(order);
 
             return orderModel;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(ex.Message);
+            throw;
         }
         catch (Exception ex)
         {
             logger.LogError(ex.Message);
             await context.Database.RollbackTransactionAsync();
             throw;
+        }
+    }
+
+    private async Task ProcessExternalInvoicing(Order order)
+    {
+        try
+        {
+            var summaryArgs = new OrderSummaryPostArgs
+            {
+                OrderId = order.OrderId,
+                SubTotal = decimal.Round(order.SubTotal, 2),
+                Discounts = decimal.Round(order.Discounts, 2),
+                Total = decimal.Round(order.Total, 2),
+                OrderItems = order.OrderItems.Select(i => new OrderSummaryItemPostArgs
+                {
+                    Quantity = i.Quantity,
+                    UnitPrice = decimal.Round(i.UnitPrice, 2)
+                }).ToList()
+            };
+
+            var json = JsonSerializer.Serialize(summaryArgs);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync("/api/vendas", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var msg = await response.Content.ReadAsStringAsync();
+                throw new Exception(msg);
+            }
+
+            order.Status = OrderStatus.CONCLUIDO;
+
+            context.Update(order);
+            context.SaveChanges();
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Não foi possível efetuar a venda. O serviço de faturamento pode estar indisponível no momento.");
         }
     }
 }

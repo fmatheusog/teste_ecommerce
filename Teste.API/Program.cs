@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Polly;
 using Teste.Application.Abstractions;
 using Teste.Application.Services;
 using Teste.Infrastructure.Context;
@@ -20,6 +21,23 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddScoped<IOrderService, OrderService>();
+
+var FaturamentoExternalURL = builder.Configuration["FaturamentoAPI:URL"]
+    ?? throw new InvalidOperationException("FaturamentoAPI:URL não informado");
+var FaturamentoEmail = builder.Configuration["FaturamentoAPI:Email"]
+    ?? throw new InvalidOperationException("FaturamentoAPI:Email não informado");
+
+builder.Services.AddHttpClient<IOrderService, OrderService>(client =>
+{
+    client.BaseAddress = new Uri(FaturamentoExternalURL);
+    client.DefaultRequestHeaders.Add("email", FaturamentoEmail);
+})
+// Retry
+.AddTransientHttpErrorPolicy(policyBuilder =>
+    policyBuilder.WaitAndRetryAsync(5, retryAttemp => TimeSpan.FromSeconds(Math.Pow(3, retryAttemp)))
+)
+// Timeout
+.AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(15)));
 
 var app = builder.Build();
 

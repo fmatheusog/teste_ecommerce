@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Teste.Application.Abstractions;
 using Teste.Shared.Args;
+using Teste.Shared.Enums;
 
 namespace Teste.API.Controllers;
 
@@ -28,6 +29,16 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     public async Task<IActionResult> PostProcessOrder([FromBody] ProcessOrderPostArgs args)
     {
         var order = await orderService.ProcessOrderAsync(args);
+
+        if (order.Status == OrderStatus.PENDENTE)
+        {
+            return Ok(new
+            {
+                message = "O pedido foi cadastrado com sucesso mas não foi possível efetuar a venda (erro em serviço externo)",
+                orderStatus = order.Status,
+                order
+            });
+        }
 
         return Ok(order);
     }
