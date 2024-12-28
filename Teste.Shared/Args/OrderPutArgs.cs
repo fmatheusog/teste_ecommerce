@@ -20,12 +20,6 @@ public sealed class OrderPutArgs
                 .WithMessage("Data obrigatória")
                 .Must(d => d < DateTime.Now)
                 .WithMessage("A data do pedido deve ser anterior a data de hoje");
-
-            RuleFor(o => o.Status)
-                .NotEmpty()
-                .WithMessage("Status obrigatório")
-                .IsInEnum()
-                .WithMessage("Status inválido");
         }
     }
 }

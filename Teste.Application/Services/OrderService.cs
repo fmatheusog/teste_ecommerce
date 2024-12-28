@@ -123,7 +123,6 @@ public class OrderService(
             ?? throw new InvalidOperationException("Pedido não encontrado ou já finalizado");
 
         order.OrderDate = args.OrderDate;
-        order.Status = args.Status;
 
         context.Update(order);
         context.SaveChanges();
@@ -160,47 +159,49 @@ public class OrderService(
     {
         new OrderItemPutArgs.Validator().ValidateAndThrow(args);
 
-        //var items = await context
-        //    .Order
-        //    .Include(o => o.OrderItems)
-        //    .Where(o => o.Status == OrderStatus.PENDENTE)
-        //    .Where(o => o.OrderId == orderId)
-        //    .SelectMany(o => o.OrderItems)
-        //    .ToListAsync();
+        var order = await context
+            .Order
+            .Include(o => o.OrderItems)
+            .Include(o => o.Customer)
+            .Where(o => o.Status == OrderStatus.PENDENTE)
+            .FirstOrDefaultAsync(o => o.OrderId == orderId)
+            ?? throw new InvalidOperationException("Pedido não encontrado ou já finalizado");
 
-        //var item = items
-        //    .FirstOrDefault(i => i.ItemId == itemId)
-        //    ?? throw new InvalidOperationException("Item não encontrado ou pedido já finalizado");
-
-        var item = await context
-            .OrderItem
-            .Include(i => i.Order)
-            .Where(i => i.OrderId == orderId)
-            .Where(i => i.ItemId == itemId)
-            .Where(i => i.Order.Status == OrderStatus.PENDENTE)
-            .FirstOrDefaultAsync()
-            ?? throw new InvalidOperationException("Item não encontrado ou pedido já finalizado");
+        var item = order.OrderItems.FirstOrDefault(i => i.ItemId == itemId)
+            ?? throw new InvalidOperationException($"Item não encontrado no pedido: {orderId}");
 
         item.Description = args.Description;
         item.Quantity = args.Quantity;
         item.UnitPrice = args.UnitPrice;
-        
-        var subTotal = item.Order.OrderItems.Sum(i => i.Quantity * i.UnitPrice);
 
-        item.Order.SubTotal = decimal.Round(subTotal, 2);
-        item.Order.Discounts = decimal.Round(item
-            .Order
-            .Customer
-            .Category
-            .GetDiscountAmount(subTotal), 2);
-        item.Order.Total = decimal.Round(subTotal - item.Order.Discounts, 2);
+        var subTotal = order.OrderItems.Sum(i => i.Quantity * i.UnitPrice);
 
-        context.Update(item);
-        context.SaveChanges();
+        order.SubTotal = decimal.Round(subTotal, 2);
+        order.Discounts = decimal.Round(order.Customer.Category.GetDiscountAmount(subTotal), 2);
+        order.Total = decimal.Round(subTotal - order.Discounts, 2);
 
-        await ProcessExternalInvoicing(item.Order);
+        context.Update(order);
+        await context.SaveChangesAsync();
+
+        // Reprocess
+        await ProcessExternalInvoicing(order);
 
         return mapper.Map<OrderItemModel>(item);
+    }
+
+    public async Task<OrderModel> ReprocessOrderAsync(Guid orderId)
+    {
+        var order = await context
+            .Order
+            .Include(o => o.OrderItems)
+            .Include(o => o.Customer)
+            .Where(o => o.Status == OrderStatus.PENDENTE)
+            .FirstOrDefaultAsync(o => o.OrderId == orderId)
+            ?? throw new InvalidOperationException("Pedido não encontrado ou já finalizado");
+
+        await ProcessExternalInvoicing(order);
+
+        return mapper.Map<OrderModel>(order);
     }
 
     private async Task ProcessExternalInvoicing(Order order)
@@ -225,7 +226,7 @@ public class OrderService(
 
             var response = await httpClient.PostAsync("/api/vendas", content);
 
-            if (response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
                 var msg = await response.Content.ReadAsStringAsync();
                 throw new Exception(msg);

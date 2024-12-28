@@ -27,7 +27,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostProcessOrder([FromBody] ProcessOrderPostArgs args)
+    public async Task<IActionResult> ProcessOrder([FromBody] ProcessOrderPostArgs args)
     {
         try
         {
@@ -55,7 +55,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     }
 
     [HttpPut("{orderId}")]
-    public async Task<IActionResult> EditAndReprocessOrder([FromRoute] Guid orderId, [FromBody] OrderPutArgs args)
+    public async Task<IActionResult> EditOrder([FromRoute] Guid orderId, [FromBody] OrderPutArgs args)
     {
         try
         {
@@ -101,6 +101,34 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         try
         {
             var order = await orderService.EditOrderItemAsync(orderId, itemId, args);
+
+            return Ok(order);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new
+            {
+                message = ex.Message
+            });
+        }
+    }
+
+    [HttpPost("{orderId}/reprocess")]
+    public async Task<IActionResult> ReprocessOrder([FromRoute] Guid orderId)
+    {
+        try
+        {
+            var order = await orderService.ReprocessOrderAsync(orderId);
+
+            if (order.Status == OrderStatus.PENDENTE)
+            {
+                return Ok(new
+                {
+                    message = "O pedido foi cadastrado com sucesso mas não foi possível efetuar a venda (erro em serviço externo)",
+                    orderStatus = order.Status,
+                    order
+                });
+            }
 
             return Ok(order);
         }
