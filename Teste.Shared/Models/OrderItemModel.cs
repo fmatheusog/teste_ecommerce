@@ -6,7 +6,7 @@ namespace Teste.Shared.Models;
 public sealed class OrderItemModel
 {
     [JsonPropertyName("produtoId")]
-    public Guid ProductId { get; set; }
+    public int ItemId { get; set; }
     [JsonPropertyName("descricao")]
     public string Description { get; set; }
     [JsonPropertyName("quantidade")]

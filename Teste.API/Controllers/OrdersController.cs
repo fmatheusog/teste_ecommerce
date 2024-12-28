@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Teste.Application.Abstractions;
+using Teste.Infrastructure.Entities;
 using Teste.Shared.Args;
 using Teste.Shared.Enums;
 
@@ -28,24 +29,87 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> PostProcessOrder([FromBody] ProcessOrderPostArgs args)
     {
-        var order = await orderService.ProcessOrderAsync(args);
-
-        if (order.Status == OrderStatus.PENDENTE)
+        try
         {
-            return Ok(new
+            var order = await orderService.ProcessOrderAsync(args);
+
+            if (order.Status == OrderStatus.PENDENTE)
             {
-                message = "O pedido foi cadastrado com sucesso mas não foi possível efetuar a venda (erro em serviço externo)",
-                orderStatus = order.Status,
-                order
+                return Ok(new
+                {
+                    message = "O pedido foi cadastrado com sucesso mas não foi possível efetuar a venda (erro em serviço externo)",
+                    orderStatus = order.Status,
+                    order
+                });
+            }
+
+            return Ok(order);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new
+            {
+                message = ex.Message
             });
         }
-
-        return Ok(order);
     }
 
     [HttpPut("{orderId}")]
-    public IActionResult PutProcessOrder([FromRoute] Guid orderId)
+    public async Task<IActionResult> EditAndReprocessOrder([FromRoute] Guid orderId, [FromBody] OrderPutArgs args)
     {
-        return Ok(orderId);
+        try
+        {
+            var order = await orderService.EditOrderAsync(orderId, args);
+
+            return Ok(order);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new
+            {
+                message = ex.Message
+            });
+        }
+    }
+
+    [HttpPut("{orderId}/customer")]
+    public async Task<IActionResult> EditCustomer(
+        [FromRoute] Guid orderId,
+        [FromBody] CustomerPutArgs args)
+    {
+        try
+        {
+            var order = await orderService.EditCustomerAsync(orderId, args);
+
+            return Ok(order);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new
+            {
+                message = ex.Message
+            });
+        }
+    }
+
+    [HttpPut("{orderId}/items/{itemId}")]
+    public async Task<IActionResult> EditCustomer(
+        [FromRoute] Guid orderId,
+        [FromRoute] int itemId,
+        [FromBody] OrderItemPutArgs args)
+    {
+        try
+        {
+            var order = await orderService.EditOrderItemAsync(orderId, itemId, args);
+
+            return Ok(order);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new
+            {
+                message = ex.Message
+            });
+        }
     }
 }
