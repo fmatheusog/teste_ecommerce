@@ -127,8 +127,6 @@ public class OrderService(
         context.Update(order);
         context.SaveChanges();
 
-        await ProcessExternalInvoicing(order);
-
         return mapper.Map<OrderModel>(order);
     }
 
@@ -149,8 +147,6 @@ public class OrderService(
 
         context.Update(order);
         context.SaveChanges();
-
-        await ProcessExternalInvoicing(order);
 
         return mapper.Map<CustomerModel>(order.Customer);
     }
@@ -182,9 +178,6 @@ public class OrderService(
 
         context.Update(order);
         await context.SaveChangesAsync();
-
-        // Reprocess
-        await ProcessExternalInvoicing(order);
 
         return mapper.Map<OrderItemModel>(item);
     }
