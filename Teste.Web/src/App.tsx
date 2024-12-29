@@ -1,7 +1,12 @@
+import { QueryProvider } from "@/lib/query-provider";
 import { AppRoutes } from "./routes";
 
 function App() {
-  return <AppRoutes />;
+  return (
+    <QueryProvider>
+      <AppRoutes />
+    </QueryProvider>
+  );
 }
 
 export default App;
