@@ -4,6 +4,7 @@ import { OrderModel } from "@/models/order-model";
 import { OrderStatus } from "@/enums/order-status";
 import { CustomerCategory } from "@/enums/customer-category";
 import { OrderCard } from "@/features/orders/components/order-card";
+import { useNavigate } from "react-router-dom";
 
 const items: OrderModel[] = [
   {
@@ -31,16 +32,18 @@ const items: OrderModel[] = [
 ];
 
 export const OrderList = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col gap-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Pedidos</h1>
-        <Button>Novo pedido</Button>
+        <Button onClick={() => navigate("/orders/create")}>Novo pedido</Button>
       </div>
 
       <div>
-        {items.map((i) => (
-          <OrderCard order={i} />
+        {items.map((o) => (
+          <OrderCard key={o.identificador} order={o} />
         ))}
       </div>
     </div>

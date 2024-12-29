@@ -32,17 +32,17 @@ export const EditOrderItemModal = ({ orderItem, orderId }: Props) => {
   const form = useForm<z.infer<typeof editOrderItemSchema>>({
     resolver: zodResolver(editOrderItemSchema),
     defaultValues: {
-      descricao: orderItem.descricao,
-      quantidade: orderItem.quantidade,
-      precoUnitario: formatCurrency(orderItem.precoUnitario),
+      description: orderItem.descricao,
+      quantity: orderItem.quantidade,
+      unitPrice: formatCurrency(orderItem.precoUnitario),
     },
   });
 
   const handleModalClose = () => {
     form.reset({
-      descricao: orderItem.descricao,
-      quantidade: orderItem.quantidade,
-      precoUnitario: formatCurrency(orderItem.precoUnitario),
+      description: orderItem.descricao,
+      quantity: orderItem.quantidade,
+      unitPrice: formatCurrency(orderItem.precoUnitario),
     });
   };
 
@@ -68,7 +68,7 @@ export const EditOrderItemModal = ({ orderItem, orderId }: Props) => {
           >
             <FormField
               control={form.control}
-              name="descricao"
+              name="description"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Descrição</FormLabel>
@@ -82,7 +82,7 @@ export const EditOrderItemModal = ({ orderItem, orderId }: Props) => {
 
             <FormField
               control={form.control}
-              name="quantidade"
+              name="quantity"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Quantidade</FormLabel>
@@ -96,7 +96,7 @@ export const EditOrderItemModal = ({ orderItem, orderId }: Props) => {
 
             <FormField
               control={form.control}
-              name="precoUnitario"
+              name="unitPrice"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Preço unitário</FormLabel>

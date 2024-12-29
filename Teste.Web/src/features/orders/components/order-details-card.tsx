@@ -87,7 +87,10 @@ export const OrderDetailsCard = () => {
             <AccordionTrigger>Itens do pedido</AccordionTrigger>
             <AccordionContent>
               {order.itens.map((i) => (
-                <div className="flex justify-between max-w-md mb-2">
+                <div
+                  className="flex justify-between max-w-md mb-2"
+                  key={i.produtoId}
+                >
                   <div className="flex items-center gap-x-6">
                     <p>{i.descricao}</p>
                     <p>{formatCurrency(i.precoUnitario)}</p>

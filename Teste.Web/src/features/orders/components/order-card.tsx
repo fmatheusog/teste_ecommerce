@@ -21,7 +21,7 @@ export const OrderCard = ({ order }: Props) => {
   const navigate = useNavigate();
 
   return (
-    <Card key={order.identificador}>
+    <Card>
       <CardHeader>
         <CardTitle className="text-base font-semibold">
           Pedido {order.identificador}
