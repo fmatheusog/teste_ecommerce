@@ -1,38 +1,26 @@
 import { Button } from "@/components/ui/button";
+import { useGetOrders } from "@/features/orders/api/use-get-orders";
 
-import { OrderModel } from "@/models/order-model";
-import { OrderStatus } from "@/enums/order-status";
-import { CustomerCategory } from "@/enums/customer-category";
 import { OrderCard } from "@/features/orders/components/order-card";
+import { Loader } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const items: OrderModel[] = [
-  {
-    identificador: "28d8g-277jk-dkjgic-28dg8-dd8fg",
-    dataVenda: new Date().toISOString(),
-    subtotal: 0,
-    valorTotal: 0,
-    cliente: {
-      clienteId: "clienteId",
-      nome: "Felipe Matheus Mendes Mori",
-      cpf: "469.707.358-42",
-      categoria: CustomerCategory.REGULAR,
-    },
-    itens: [
-      {
-        produtoId: 57,
-        descricao: "Produto 1",
-        quantidade: 1,
-        precoUnitario: 10.5,
-      },
-    ],
-    desconto: 0,
-    status: OrderStatus.PENDENTE,
-  },
-];
-
 export const OrderList = () => {
+  const { data: orders, isLoading, isError } = useGetOrders();
+
   const navigate = useNavigate();
+
+  if (isLoading) {
+    return (
+      <div>
+        <Loader className="animate-spin size-12" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return <div>Erro ao carregar pedidos.</div>;
+  }
 
   return (
     <div className="flex flex-col gap-y-8">
@@ -41,11 +29,13 @@ export const OrderList = () => {
         <Button onClick={() => navigate("/orders/create")}>Novo pedido</Button>
       </div>
 
-      <div>
-        {items.map((o) => (
-          <OrderCard key={o.identificador} order={o} />
-        ))}
-      </div>
+      {orders && orders.length > 0 && (
+        <div className="flex flex-col gap-y-4">
+          {orders.map((o) => (
+            <OrderCard key={o.identificador} order={o} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

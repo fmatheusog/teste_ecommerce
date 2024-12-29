@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { OrderStatus } from "@/enums/order-status";
 import { formatCurrency } from "@/lib/utils";
 
 import { OrderModel } from "@/models/order-model";
@@ -71,9 +72,11 @@ export const OrderCard = ({ order }: Props) => {
         >
           Ver detalhes do pedido
         </Button>
-        <Button size="sm" variant="secondary">
-          Reprocessar pedido
-        </Button>
+        {order.status == OrderStatus.PENDENTE && (
+          <Button size="sm" variant="secondary">
+            Reprocessar pedido
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
