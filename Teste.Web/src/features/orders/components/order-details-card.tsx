@@ -89,6 +89,7 @@ export const OrderDetailsCard = () => {
                       <EditOrderItemModal
                         orderItem={i}
                         orderId={order.identificador}
+                        itemId={i.produtoId}
                       />
                     )}
                   </div>

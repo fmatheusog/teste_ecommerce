@@ -13,3 +13,13 @@ export function formatCurrency(amount: number) {
     maximumFractionDigits: 2,
   });
 }
+
+export const convertCurrencyToNumber = (amount: string): number => {
+  return parseFloat(
+    amount
+      ?.replace("R$", "")
+      ?.replace(".", "")
+      ?.replace(",", ".")
+      ?.replace(/\s/g, "")
+  );
+};

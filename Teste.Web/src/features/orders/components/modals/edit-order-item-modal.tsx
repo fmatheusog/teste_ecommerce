@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,14 +22,21 @@ import { Input } from "@/components/ui/input";
 
 import { editOrderItemSchema } from "@/features/orders/schemas";
 import { OrderItemPutArgs } from "@/args/order-item-put-args";
-import { formatCurrency } from "@/lib/utils";
+import { convertCurrencyToNumber, formatCurrency } from "@/lib/utils";
+import { useEditOrderItem } from "@/features/orders/api/use-edit-order-item";
 
 interface Props {
   orderItem: OrderItemPutArgs;
   orderId: string;
+  itemId: number;
 }
 
-export const EditOrderItemModal = ({ orderItem, orderId }: Props) => {
+export const EditOrderItemModal = ({ orderItem, orderId, itemId }: Props) => {
+  const [open, setOpen] = useState<boolean>();
+
+  const { mutate: editOrderItemSave, isPending: isPendingEditOrderItemSave } =
+    useEditOrderItem(orderId);
+
   const form = useForm<z.infer<typeof editOrderItemSchema>>({
     resolver: zodResolver(editOrderItemSchema),
     defaultValues: {
@@ -44,14 +52,25 @@ export const EditOrderItemModal = ({ orderItem, orderId }: Props) => {
       quantity: orderItem.quantidade,
       unitPrice: formatCurrency(orderItem.precoUnitario),
     });
+
+    setOpen(!open);
   };
 
-  const handleSubmit = () => {
-    console.log(orderId);
+  const handleSubmit = (values: z.infer<typeof editOrderItemSchema>) => {
+    editOrderItemSave({
+      args: {
+        descricao: values.description,
+        quantidade: values.quantity,
+        precoUnitario: convertCurrencyToNumber(values.unitPrice),
+      },
+      itemId: itemId,
+    });
+
+    handleModalClose();
   };
 
   return (
-    <Dialog onOpenChange={handleModalClose}>
+    <Dialog open={open} onOpenChange={handleModalClose}>
       <DialogTrigger asChild>
         <Button size="sm" variant="secondary">
           Editar item
@@ -109,7 +128,9 @@ export const EditOrderItemModal = ({ orderItem, orderId }: Props) => {
             />
 
             <div className="flex justify-end">
-              <Button>Salvar alterações</Button>
+              <Button disabled={isPendingEditOrderItemSave}>
+                Salvar alterações
+              </Button>
             </div>
           </form>
         </Form>
