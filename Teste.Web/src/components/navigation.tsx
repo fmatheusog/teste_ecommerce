@@ -1,14 +1,20 @@
 import { Link, useLocation } from "react-router-dom";
-import { GoHome, GoHomeFill } from "react-icons/go";
+import { GoHome, GoHomeFill, GoProject } from "react-icons/go";
 
 import { cn } from "@/lib/utils";
 
 const routes = [
   {
-    label: "Home",
+    label: "Início",
     href: "/",
     icon: GoHome,
     activeIcon: GoHomeFill,
+  },
+  {
+    label: "Pedidos",
+    href: "/orders",
+    icon: GoProject,
+    activeIcon: GoProject,
   },
 ];
 
