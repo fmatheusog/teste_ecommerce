@@ -1,4 +1,5 @@
 import moment from "moment";
+import { useState } from "react";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
@@ -30,6 +31,7 @@ import {
 
 import { editOrderDateSchema } from "@/features/orders/schemas";
 import { cn } from "@/lib/utils";
+import { useEditOrderDate } from "@/features/orders/api/use-edit-order-date-";
 
 interface Props {
   orderId: string;
@@ -37,6 +39,11 @@ interface Props {
 }
 
 export const EditOrderDateModal = ({ orderDate, orderId }: Props) => {
+  const [open, setOpen] = useState<boolean>();
+
+  const { mutate: editOrderDateSave, isPending: isPendingEditOrderDateSave } =
+    useEditOrderDate(orderId);
+
   const form = useForm<z.infer<typeof editOrderDateSchema>>({
     resolver: zodResolver(editOrderDateSchema),
     defaultValues: {
@@ -48,14 +55,22 @@ export const EditOrderDateModal = ({ orderDate, orderId }: Props) => {
     form.reset({
       orderDate: moment(orderDate).toDate(),
     });
+
+    setOpen(!open);
   };
 
-  const handleSubmit = () => {
-    console.log(orderId);
+  const handleSubmit = (values: z.infer<typeof editOrderDateSchema>) => {
+    editOrderDateSave({
+      args: {
+        dataVenda: values.orderDate.toISOString(),
+      },
+    });
+
+    handleModalClose();
   };
 
   return (
-    <Dialog onOpenChange={handleModalClose}>
+    <Dialog open={open} onOpenChange={handleModalClose}>
       <DialogTrigger asChild>
         <Button size="sm" variant="secondary">
           Alterar data do pedido
@@ -115,7 +130,9 @@ export const EditOrderDateModal = ({ orderDate, orderId }: Props) => {
             />
 
             <div className="flex justify-end">
-              <Button>Salvar alterações</Button>
+              <Button disabled={isPendingEditOrderDateSave}>
+                Salvar alterações
+              </Button>
             </div>
           </form>
         </Form>

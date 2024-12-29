@@ -32,6 +32,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CustomerCategory } from "@/enums/customer-category";
+import { useEditCustomer } from "@/features/orders/api/use-edit-customer";
+import { useState } from "react";
 
 interface Props {
   customer: CustomerPutArgs;
@@ -39,6 +41,11 @@ interface Props {
 }
 
 export const EditCustomerModal = ({ customer, orderId }: Props) => {
+  const [open, setOpen] = useState<boolean>();
+
+  const { mutate: editCustomerSave, isPending: isPendingEditCustomerSave } =
+    useEditCustomer(orderId);
+
   const form = useForm<z.infer<typeof editCustomerSchema>>({
     resolver: zodResolver(editCustomerSchema),
     defaultValues: {
@@ -54,14 +61,26 @@ export const EditCustomerModal = ({ customer, orderId }: Props) => {
       nationalDocument: customer.cpf,
       category: customer.categoria,
     });
+
+    setOpen(!open);
   };
 
-  const handleSubmit = () => {
-    console.log(orderId);
+  const handleSubmit = (values: z.infer<typeof editCustomerSchema>) => {
+    const categoryKey = values.category as keyof typeof CustomerCategory;
+
+    editCustomerSave({
+      args: {
+        nome: values.name,
+        cpf: values.nationalDocument,
+        categoria: CustomerCategory[categoryKey],
+      },
+    });
+
+    handleModalClose();
   };
 
   return (
-    <Dialog onOpenChange={handleModalClose}>
+    <Dialog open={open} onOpenChange={handleModalClose}>
       <DialogTrigger asChild>
         <Button size="sm" variant="secondary">
           Alterar dados do cliente
@@ -141,7 +160,9 @@ export const EditCustomerModal = ({ customer, orderId }: Props) => {
             />
 
             <div className="flex justify-end">
-              <Button>Salvar alterações</Button>
+              <Button disabled={isPendingEditCustomerSave}>
+                Salvar alterações
+              </Button>
             </div>
           </form>
         </Form>
