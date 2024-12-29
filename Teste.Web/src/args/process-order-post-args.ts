@@ -3,7 +3,7 @@ import { OrderItemPostArgs } from "@/args/order-item-post-args";
 import { OrderModel } from "@/models/order-model";
 
 export interface ProcessOrderPostArgs
-  extends Omit<OrderModel, "cliente" | "itens"> {
+  extends Pick<OrderModel, "identificador" | "dataVenda"> {
   cliente: CustomerPostArgs;
   itens: OrderItemPostArgs[];
 }

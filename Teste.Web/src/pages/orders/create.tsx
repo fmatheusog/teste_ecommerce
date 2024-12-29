@@ -1,4 +1,5 @@
 import { NewCustomerForm } from "@/features/orders/components/new-customer-form";
+import { NewOrderForm } from "@/features/orders/components/new-order-form";
 import { NewOrderItemsForm } from "@/features/orders/components/new-order-items-form";
 import { useCreateOrderStore } from "@/features/orders/stores/create-order-store";
 
@@ -15,6 +16,10 @@ export function CreateOrder() {
       {/* Items do pedido */}
       {step == 2 && <h1 className="font-semibold text-xl">Itens do pedido</h1>}
       {step == 2 && <NewOrderItemsForm />}
+
+      {/* Dados do pedido */}
+      {step == 3 && <h1 className="font-semibold text-xl">Dados do pedido</h1>}
+      {step == 3 && <NewOrderForm />}
     </div>
   );
 }
