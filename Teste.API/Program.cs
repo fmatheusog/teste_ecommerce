@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Polly;
+using System.Runtime;
 using Teste.Application.Abstractions;
 using Teste.Application.BackgroundServices;
 using Teste.Application.Services;
 using Teste.Infrastructure.Context;
+using Teste.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,12 +45,7 @@ builder.Services.AddHttpClient<IOrderService, OrderService>(client =>
 // Background service fila de reprocesamento
 builder.Services.AddHostedService<ReprocessOrdersQueueService>();
 
-// HttpClient do background service
-builder.Services.AddHttpClient<ReprocessOrdersQueueHttpClient>(client =>
-{
-    client.BaseAddress = new Uri(FaturamentoExternalURL);
-    client.DefaultRequestHeaders.Add("email", FaturamentoEmail);
-});
+builder.Services.Configure<OrderProcessingAPISettings>(builder.Configuration.GetSection("FaturamentoAPI"));
 
 builder.Services.AddCors(options =>
 {

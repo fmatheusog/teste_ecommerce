@@ -2,8 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System.Net.Http;
 using System.Text;
 using Teste.Infrastructure.Context;
+using Teste.Shared;
 using Teste.Shared.Enums;
 
 namespace Teste.Application.BackgroundServices;
@@ -11,7 +14,7 @@ namespace Teste.Application.BackgroundServices;
 public class ReprocessOrdersQueueService(
     ILogger<ReprocessOrdersQueueService> logger,
     IServiceProvider serviceProvider,
-    ReprocessOrdersQueueHttpClient reprocessOrdersQueueHttpClient) : BackgroundService
+    IOptions<OrderProcessingAPISettings> options) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -27,6 +30,12 @@ public class ReprocessOrdersQueueService(
             {
                 using var scope = serviceProvider.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+
+                httpClient.BaseAddress = new Uri(options.Value.URL);
+                httpClient.DefaultRequestHeaders.Add("email", options.Value.Email);
+
+                logger.LogInformation($"#### teste: {httpClient.BaseAddress}");
 
                 var queue = await context
                     .ReprocessingOrdersQueue
@@ -62,7 +71,7 @@ public class ReprocessOrdersQueueService(
                     try
                     {
                         var content = new StringContent(item.OrderData, Encoding.UTF8, "application/json");
-                        var response = await reprocessOrdersQueueHttpClient.HttpClient.PostAsync("/api/vendas", content, stoppingToken);
+                        var response = await httpClient.PostAsync("/api/vendas", content, stoppingToken);
 
                         if (!response.IsSuccessStatusCode)
                         {
