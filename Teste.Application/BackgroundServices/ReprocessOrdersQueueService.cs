@@ -70,6 +70,11 @@ public class ReprocessOrdersQueueService(
                         } else
                         {
                             await UpdateOrderStatus(context, item.OrderId, OrderStatus.CONCLUIDO);
+
+                            context.ReprocessingOrdersQueue.Remove(item);
+
+                            await context.SaveChangesAsync(stoppingToken);
+                            await context.Database.CommitTransactionAsync(stoppingToken);
                         }
                     }
                     catch (Exception ex) {
