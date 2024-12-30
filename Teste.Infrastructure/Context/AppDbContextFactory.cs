@@ -13,13 +13,14 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 
         StringBuilder conn = new();
 
-        conn.Append("Host=localhost;");
-        conn.Append("Port=5432;");
-        conn.Append("Database=db_ecommerce;");
-        conn.Append("Username=postgres;");
-        conn.Append("Password=testesti3");
+        conn.Append("Server=localhost,1433;");
+        conn.Append("Database=teste_db;");
+        conn.Append("User ID=sa;");
+        conn.Append("Password=1q2w3e4r@#$;");
+        conn.Append("Trusted_Connection=False;");
+        conn.Append("Trust Server Certificate=True;");
 
-        optionsBuilder.UseNpgsql(conn.ToString());
+        optionsBuilder.UseSqlServer(conn.ToString());
 
         return new AppDbContext(optionsBuilder.Options);
     }
