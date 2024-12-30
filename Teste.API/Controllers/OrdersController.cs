@@ -54,6 +54,24 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         }
     }
 
+    [HttpPost("with-error")]
+    public async Task<IActionResult> ProcessOrderWithError([FromBody] ProcessOrderPostArgs args)
+    {
+        try
+        {
+            var order = await orderService.ProcessOrderWithErrorAsync(args);
+
+            return Ok(order);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new
+            {
+                message = ex.Message
+            });
+        }
+    }
+
     [HttpPut("{orderId}")]
     public async Task<IActionResult> EditOrder([FromRoute] Guid orderId, [FromBody] OrderPutArgs args)
     {

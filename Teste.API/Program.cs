@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Polly;
 using Teste.Application.Abstractions;
+using Teste.Application.BackgroundServices;
 using Teste.Application.Services;
 using Teste.Infrastructure.Context;
 
@@ -38,6 +39,16 @@ builder.Services.AddHttpClient<IOrderService, OrderService>(client =>
 )
 // Timeout
 .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(15)));
+
+// Background service fila de reprocesamento
+builder.Services.AddHostedService<ReprocessOrdersQueueService>();
+
+// HttpClient do background service
+builder.Services.AddHttpClient<ReprocessOrdersQueueHttpClient>(client =>
+{
+    client.BaseAddress = new Uri(FaturamentoExternalURL);
+    client.DefaultRequestHeaders.Add("email", FaturamentoEmail);
+});
 
 builder.Services.AddCors(options =>
 {

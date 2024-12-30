@@ -112,6 +112,75 @@ public class OrderService(
         }
     }
 
+    public async Task<OrderModel> ProcessOrderWithErrorAsync(ProcessOrderPostArgs args)
+    {
+        try
+        {
+            new ProcessOrderPostArgs.Validator().ValidateAndThrow(args);
+
+            var alreadyExists = await GetOrderByIdAsync(args.OrderId);
+
+            if (alreadyExists is not null) throw new InvalidOperationException("Já existe um pedido com esse Identificador");
+
+            var customer = new Customer
+            {
+                CustomerId = args.Customer.CustomerId,
+                Name = args.Customer.Name,
+                NationalDocument = args.Customer.NationalDocument,
+                Category = args.Customer.Category,
+            };
+
+            var orderItems = args
+                .Items
+                .Select(i => new OrderItem
+                {
+                    ItemId = i.ItemId,
+                    Description = i.Description,
+                    Quantity = i.Quantity,
+                    UnitPrice = decimal.Round(i.UnitPrice, 2),
+                })
+                .ToList();
+
+            decimal subTotal = orderItems.Sum(i => i.Quantity * i.UnitPrice);
+
+            var order = new Order
+            {
+                OrderId = args.OrderId,
+                OrderDate = args.OrderDate,
+                Customer = customer,
+                OrderItems = orderItems,
+                SubTotal = decimal.Round(subTotal, 2),
+                Status = OrderStatus.PENDENTE,
+                Discounts = decimal.Round(customer.Category.GetDiscountAmount(subTotal), 2),
+            };
+
+            order.Total = decimal.Round(subTotal - order.Discounts, 2);
+
+            await context.Database.BeginTransactionAsync();
+            await context.AddAsync(order);
+            await context.SaveChangesAsync();
+            await context.Database.CommitTransactionAsync();
+
+            return mapper.Map<OrderModel>(order);
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogError(ex.Message);
+            throw;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(ex.Message);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex.Message);
+            await context.Database.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
     public async Task<OrderModel> EditOrderAsync(Guid orderId, OrderPutArgs args)
     {
         new OrderPutArgs.Validator().ValidateAndThrow(args);
@@ -199,24 +268,24 @@ public class OrderService(
 
     private async Task ProcessExternalInvoicing(Order order)
     {
+        var summaryArgs = new OrderSummaryPostArgs
+        {
+            OrderId = order.OrderId,
+            SubTotal = decimal.Round(order.SubTotal, 2),
+            Discounts = decimal.Round(order.Discounts, 2),
+            Total = decimal.Round(order.Total, 2),
+            OrderItems = order.OrderItems.Select(i => new OrderSummaryItemPostArgs
+            {
+                Quantity = i.Quantity,
+                UnitPrice = decimal.Round(i.UnitPrice, 2)
+            }).ToList()
+        };
+
+        var json = JsonSerializer.Serialize(summaryArgs);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
         try
         {
-            var summaryArgs = new OrderSummaryPostArgs
-            {
-                OrderId = order.OrderId,
-                SubTotal = decimal.Round(order.SubTotal, 2),
-                Discounts = decimal.Round(order.Discounts, 2),
-                Total = decimal.Round(order.Total, 2),
-                OrderItems = order.OrderItems.Select(i => new OrderSummaryItemPostArgs
-                {
-                    Quantity = i.Quantity,
-                    UnitPrice = decimal.Round(i.UnitPrice, 2)
-                }).ToList()
-            };
-
-            var json = JsonSerializer.Serialize(summaryArgs);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
             var response = await httpClient.PostAsync("/api/vendas", content);
 
             if (!response.IsSuccessStatusCode)
@@ -232,7 +301,16 @@ public class OrderService(
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Não foi possível efetuar a venda. O serviço de faturamento pode estar indisponível no momento.");
+            logger.LogWarning(ex, "Não foi possível efetuar a venda. O serviço de faturamento pode estar indisponível no momento. O pedido foi enviado para a fila de processamento.");
+
+            var queueItem = new ReprocessingOrdersQueue
+            {
+                OrderId = order.OrderId,
+                OrderData = json,
+            };
+
+            context.ReprocessingOrdersQueue.Add(queueItem);
+            await context.SaveChangesAsync();
         }
     }
 }
