@@ -8,6 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<OrderItem> OrderItem { get; set; } = default!;
     public DbSet<Customer> Customer { get; set; } = default!;
     public DbSet<Order> Order { get; set; } = default!;
+    public DbSet<ReprocessingOrdersQueue> ReprocessingOrdersQueue { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
