@@ -1,4 +1,6 @@
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { v4 } from "uuid";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,7 +28,6 @@ import { CustomerCategory } from "@/enums/customer-category";
 import { CustomerPostArgs } from "@/args/customer-post-args";
 import { z } from "zod";
 import { createCustomerSchema } from "@/features/orders/schemas";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 export const NewCustomerForm = () => {
   const form = useForm<z.infer<typeof createCustomerSchema>>({
@@ -78,6 +79,16 @@ export const NewCustomerForm = () => {
                 </FormItem>
               )}
             />
+
+            <Button
+              className="w-48"
+              type="button"
+              onClick={() => {
+                form.setValue("customerId", v4());
+              }}
+            >
+              Gerar id aleatório
+            </Button>
 
             <FormField
               control={form.control}

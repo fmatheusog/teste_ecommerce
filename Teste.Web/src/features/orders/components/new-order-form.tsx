@@ -1,6 +1,7 @@
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
+import { v4 } from "uuid";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -27,8 +28,12 @@ import {
 } from "@/components/ui/popover";
 
 import { cn } from "@/lib/utils";
+import { useProcessOrder } from "@/features/orders/api/use-process-order";
 
 export const NewOrderForm = () => {
+  const { mutate: processOrderSave, isPending: isPendingProcessOrderSave } =
+    useProcessOrder();
+
   const form = useForm<z.infer<typeof createOrderSchema>>({
     resolver: zodResolver(createOrderSchema),
     defaultValues: {
@@ -50,7 +55,7 @@ export const NewOrderForm = () => {
       itens: orderItems,
     };
 
-    console.log(args);
+    processOrderSave({ args });
   };
 
   return (
@@ -74,6 +79,16 @@ export const NewOrderForm = () => {
                 </FormItem>
               )}
             />
+
+            <Button
+              className="w-48"
+              type="button"
+              onClick={() => {
+                form.setValue("orderId", v4());
+              }}
+            >
+              Gerar id aleatório
+            </Button>
 
             <FormField
               control={form.control}
@@ -117,7 +132,11 @@ export const NewOrderForm = () => {
             />
 
             <div className="flex justify-end">
-              <Button className="w-32" type="submit">
+              <Button
+                disabled={isPendingProcessOrderSave}
+                className="w-32"
+                type="submit"
+              >
                 Salvar
               </Button>
             </div>

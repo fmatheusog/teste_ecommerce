@@ -27,14 +27,14 @@ export const useProcessOrder = () => {
     onSuccess: (response) => {
       if (response.status != OrderStatus.PENDENTE) {
         toast({
-          title: "Aviso",
-          description:
-            "O pedido foi criado porém não foi possível realizar o faturamento",
+          title: "Sucesso",
+          description: "Pedido processado com sucesso!",
         });
       } else {
         toast({
-          title: "Sucesso",
-          description: "Pedido processado com sucesso!",
+          title: "Aviso",
+          description:
+            "O pedido foi criado porém não foi possível realizar o faturamento",
         });
       }
 
