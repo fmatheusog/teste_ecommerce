@@ -25,7 +25,7 @@ export const useReprocessOrder = (orderId: string) => {
       return response.data;
     },
     onSuccess: (response) => {
-      if (response.status != OrderStatus.PENDENTE) {
+      if (response.status == OrderStatus.PENDENTE) {
         toast({
           title: "Aviso",
           description: "Não foi possível realizar o faturamento do pedido",

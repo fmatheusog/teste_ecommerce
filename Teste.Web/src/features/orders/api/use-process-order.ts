@@ -9,6 +9,7 @@ import { OrderModel } from "@/models/order-model";
 
 interface RequestType {
   args: ProcessOrderPostArgs;
+  simulateError: boolean;
 }
 
 export const useProcessOrder = () => {
@@ -19,8 +20,11 @@ export const useProcessOrder = () => {
   const queryClient = useQueryClient();
 
   const mutate = useMutation({
-    mutationFn: async ({ args }: RequestType) => {
-      const response = await axiosClient.post<OrderModel>(`/orders`, args);
+    mutationFn: async ({ args, simulateError }: RequestType) => {
+      const response = await axiosClient.post<OrderModel>(
+        simulateError ? "/orders/with-error" : "/orders",
+        args
+      );
 
       return response.data;
     },

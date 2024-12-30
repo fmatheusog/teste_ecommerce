@@ -29,8 +29,11 @@ import {
 
 import { cn } from "@/lib/utils";
 import { useProcessOrder } from "@/features/orders/api/use-process-order";
+import { useState } from "react";
 
 export const NewOrderForm = () => {
+  const [simulateError, setSimulateError] = useState<boolean>(false);
+
   const { mutate: processOrderSave, isPending: isPendingProcessOrderSave } =
     useProcessOrder();
 
@@ -55,7 +58,7 @@ export const NewOrderForm = () => {
       itens: orderItems,
     };
 
-    processOrderSave({ args });
+    processOrderSave({ args, simulateError });
   };
 
   return (
@@ -131,7 +134,15 @@ export const NewOrderForm = () => {
               )}
             />
 
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-x-4">
+              <div className="flex items-center gap-x-2">
+                <input
+                  type="checkbox"
+                  checked={simulateError}
+                  onChange={() => setSimulateError(!simulateError)}
+                />
+                Simular erro
+              </div>
               <Button
                 disabled={isPendingProcessOrderSave}
                 className="w-32"
