@@ -43,6 +43,7 @@ export const useProcessOrder = () => {
       }
 
       queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["reprocess-queue"] });
 
       navigate("/orders");
     },

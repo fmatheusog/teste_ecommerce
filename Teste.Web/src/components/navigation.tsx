@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { GoHome, GoHomeFill, GoProject } from "react-icons/go";
+import { HiMiniQueueList } from "react-icons/hi2";
 
 import { cn } from "@/lib/utils";
 
@@ -15,6 +16,12 @@ const routes = [
     href: "/orders",
     icon: GoProject,
     activeIcon: GoProject,
+  },
+  {
+    label: "Fila de reprocessamento",
+    href: "/reprocess-queue",
+    icon: HiMiniQueueList,
+    activeIcon: HiMiniQueueList,
   },
 ];
 
