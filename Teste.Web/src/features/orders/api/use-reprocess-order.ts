@@ -1,14 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { ProcessOrderPostArgs } from "@/args/process-order-post-args";
 import { OrderStatus } from "@/enums/order-status";
 import { useToast } from "@/hooks/use-toast";
 import { axiosClient } from "@/lib/axios-client";
 import { OrderModel } from "@/models/order-model";
-
-interface RequestType {
-  args: ProcessOrderPostArgs;
-}
 
 export const useReprocessOrder = (orderId: string) => {
   const { toast } = useToast();
@@ -16,10 +11,9 @@ export const useReprocessOrder = (orderId: string) => {
   const queryClient = useQueryClient();
 
   const mutate = useMutation({
-    mutationFn: async ({ args }: RequestType) => {
+    mutationFn: async () => {
       const response = await axiosClient.post<OrderModel>(
-        `/orders` + orderId,
-        args
+        `/orders/${orderId}/reprocess`
       );
 
       return response.data;
@@ -43,7 +37,7 @@ export const useReprocessOrder = (orderId: string) => {
     onError: () => {
       toast({
         title: "Falha",
-        description: "Não foi possível alterar os dados do cliente!",
+        description: "Não foi possível processar o pedido",
         variant: "destructive",
       });
     },

@@ -24,11 +24,14 @@ import { OrderStatus } from "@/enums/order-status";
 import { formatCurrency } from "@/lib/utils";
 import { EditOrderItemModal } from "@/features/orders/components/modals/edit-order-item-modal";
 import { useGetOrderById } from "@/features/orders/api/use-get-order-by-id";
+import { useReprocessOrder } from "@/features/orders/api/use-reprocess-order";
 
 export const OrderDetailsCard = () => {
   const { orderId } = useParams<{ orderId: string }>();
 
   const { data: order, isLoading, isError } = useGetOrderById(orderId ?? "");
+  const { mutate: reprocessOrder, isPending: reprocessingOrder } =
+    useReprocessOrder(order?.identificador ?? "");
 
   if (isLoading) {
     return (
@@ -122,7 +125,12 @@ export const OrderDetailsCard = () => {
               customer={order.cliente}
               orderId={order.identificador}
             />
-            <Button size="sm" variant="secondary">
+            <Button
+              onClick={() => reprocessOrder()}
+              disabled={reprocessingOrder}
+              size="sm"
+              variant="secondary"
+            >
               Reprocessar pedido
             </Button>
           </CardFooter>

@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { OrderStatus } from "@/enums/order-status";
+import { useReprocessOrder } from "@/features/orders/api/use-reprocess-order";
 import { formatCurrency } from "@/lib/utils";
 
 import { OrderModel } from "@/models/order-model";
@@ -19,6 +20,9 @@ interface Props {
 }
 
 export const OrderCard = ({ order }: Props) => {
+  const { mutate: reprocessOrder, isPending: reprocessingOrder } =
+    useReprocessOrder(order.identificador);
+
   const navigate = useNavigate();
 
   return (
@@ -73,7 +77,12 @@ export const OrderCard = ({ order }: Props) => {
           Ver detalhes do pedido
         </Button>
         {order.status == OrderStatus.PENDENTE && (
-          <Button size="sm" variant="secondary">
+          <Button
+            onClick={() => reprocessOrder()}
+            disabled={reprocessingOrder}
+            size="sm"
+            variant="secondary"
+          >
             Reprocessar pedido
           </Button>
         )}
