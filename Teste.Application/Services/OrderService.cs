@@ -41,6 +41,15 @@ public class OrderService(
         return mapper.Map<OrderModel[]>(orders);
     }
 
+    public async Task<IReadOnlyCollection<ReprocessOrderQueueItemModel>> GetReprocessQueueAsync()
+    {
+        var orders = await context
+            .ReprocessingOrdersQueue
+            .ToListAsync();
+
+        return mapper.Map<ReprocessOrderQueueItemModel[]>(orders);
+    }
+
     public async Task<OrderModel> ProcessOrderAsync(ProcessOrderPostArgs args)
     {
         try
@@ -155,6 +164,29 @@ public class OrderService(
             };
 
             order.Total = decimal.Round(subTotal - order.Discounts, 2);
+
+            var summaryArgs = new OrderSummaryPostArgs
+            {
+                OrderId = order.OrderId,
+                SubTotal = decimal.Round(order.SubTotal, 2),
+                Discounts = decimal.Round(order.Discounts, 2),
+                Total = decimal.Round(order.Total, 2),
+                OrderItems = order.OrderItems.Select(i => new OrderSummaryItemPostArgs
+                {
+                    Quantity = i.Quantity,
+                    UnitPrice = decimal.Round(i.UnitPrice, 2)
+                }).ToList()
+            };
+
+            var json = JsonSerializer.Serialize(summaryArgs);
+
+            var queueItem = new ReprocessingOrdersQueue
+            {
+                OrderId = order.OrderId,
+                OrderData = json,
+            };
+
+            context.ReprocessingOrdersQueue.Add(queueItem);
 
             await context.Database.BeginTransactionAsync();
             await context.AddAsync(order);

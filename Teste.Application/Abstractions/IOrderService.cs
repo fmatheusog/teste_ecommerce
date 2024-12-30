@@ -6,6 +6,7 @@ namespace Teste.Application.Abstractions;
 public interface IOrderService
 {
     Task<IReadOnlyCollection<OrderModel>> GetOrdersAsync();
+    Task<IReadOnlyCollection<ReprocessOrderQueueItemModel>> GetReprocessQueueAsync();
     Task<OrderModel> GetOrderByIdAsync(Guid orderId);
     Task<OrderModel> ProcessOrderAsync(ProcessOrderPostArgs args);
     Task<OrderModel> ProcessOrderWithErrorAsync(ProcessOrderPostArgs args);

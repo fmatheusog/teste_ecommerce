@@ -11,5 +11,6 @@ public class MappingProfile : Profile
         CreateMap<Order, OrderModel>();
         CreateMap<Customer, CustomerModel>();
         CreateMap<OrderItem,  OrderItemModel>();
+        CreateMap<ReprocessingOrdersQueue, ReprocessOrderQueueItemModel>();
     }
 }

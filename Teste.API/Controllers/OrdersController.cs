@@ -18,6 +18,14 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         return Ok(orders);
     }
 
+    [HttpGet("/reprocess-queue")]
+    public async Task<IActionResult> GetReprocessQueue()
+    {
+        var orders = await orderService.GetReprocessQueueAsync();
+
+        return Ok(orders);
+    }
+
     [HttpGet("{orderId}")]
     public async Task<IActionResult> GetOrderById([FromRoute] Guid orderId)
     {
