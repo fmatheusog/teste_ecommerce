@@ -21,11 +21,11 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { CurrencyInput, Input } from "@/components/ui/input";
 
 import { createOrderItemSchema } from "@/features/orders/schemas";
 import { useCreateOrderStore } from "@/features/orders/stores/create-order-store";
-import { formatCurrency } from "@/lib/utils";
+import { convertCurrencyToNumber, formatCurrency } from "@/lib/utils";
 
 const AddItemModal = () => {
   const [open, setOpen] = useState<boolean>();
@@ -63,7 +63,7 @@ const AddItemModal = () => {
       produtoId: parseInt(itemId),
       descricao: description,
       quantidade: parseFloat(quantity),
-      precoUnitario: parseFloat(unitPrice),
+      precoUnitario: convertCurrencyToNumber(unitPrice),
     });
 
     handleModalClose();
@@ -139,7 +139,7 @@ const AddItemModal = () => {
                 <FormItem>
                   <FormLabel>Preço unitário</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Preço unitário" />
+                    <CurrencyInput {...field} placeholder="Preço unitário" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

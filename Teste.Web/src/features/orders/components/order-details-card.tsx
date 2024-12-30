@@ -25,6 +25,7 @@ import { formatCurrency } from "@/lib/utils";
 import { EditOrderItemModal } from "@/features/orders/components/modals/edit-order-item-modal";
 import { useGetOrderById } from "@/features/orders/api/use-get-order-by-id";
 import { useReprocessOrder } from "@/features/orders/api/use-reprocess-order";
+import { ErrorAlert } from "@/components/alerts/error-alert";
 
 export const OrderDetailsCard = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -35,14 +36,19 @@ export const OrderDetailsCard = () => {
 
   if (isLoading) {
     return (
-      <div>
-        <Loader className="animate-spin size-12" />
+      <div className="flex justify-center items-center gap-x-4">
+        Carregando... <Loader className="animate-spin size-4" />
       </div>
     );
   }
 
   if (isError) {
-    return <div>Erro ao carregar pedidos.</div>;
+    return (
+      <ErrorAlert
+        title="Erro"
+        description="Não foi possível carregar o pedido"
+      />
+    );
   }
 
   return (

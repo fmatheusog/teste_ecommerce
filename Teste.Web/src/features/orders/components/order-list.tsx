@@ -1,3 +1,5 @@
+import { ErrorAlert } from "@/components/alerts/error-alert";
+import { WarnAlert } from "@/components/alerts/warn-alert";
 import { Button } from "@/components/ui/button";
 import { useGetOrders } from "@/features/orders/api/use-get-orders";
 
@@ -12,14 +14,19 @@ export const OrderList = () => {
 
   if (isLoading) {
     return (
-      <div>
-        <Loader className="animate-spin size-12" />
+      <div className="flex justify-center items-center gap-x-4">
+        Carregando... <Loader className="animate-spin size-4" />
       </div>
     );
   }
 
   if (isError) {
-    return <div>Erro ao carregar pedidos.</div>;
+    return (
+      <ErrorAlert
+        title="Erro"
+        description="Não foi possível carregar os pedidos"
+      />
+    );
   }
 
   return (
@@ -28,6 +35,10 @@ export const OrderList = () => {
         <h1 className="text-2xl font-semibold">Pedidos</h1>
         <Button onClick={() => navigate("/orders/create")}>Novo pedido</Button>
       </div>
+
+      {orders && orders.length == 0 && (
+        <WarnAlert title="Nenhum pedido encontrado" />
+      )}
 
       {orders && orders.length > 0 && (
         <div className="flex flex-col gap-y-4">

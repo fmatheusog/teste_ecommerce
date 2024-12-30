@@ -18,7 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { CurrencyInput, Input } from "@/components/ui/input";
 
 import { editOrderItemSchema } from "@/features/orders/schemas";
 import { OrderItemPutArgs } from "@/args/order-item-put-args";
@@ -120,7 +120,7 @@ export const EditOrderItemModal = ({ orderItem, orderId, itemId }: Props) => {
                 <FormItem>
                   <FormLabel>Preço unitário</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Preço unitário" />
+                    <CurrencyInput {...field} placeholder="Preço unitário" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

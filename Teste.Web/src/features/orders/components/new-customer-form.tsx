@@ -12,7 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Input, MaskInput } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -104,7 +104,6 @@ export const NewCustomerForm = () => {
               )}
             />
 
-            {/* TODO: máscara de CPF */}
             <FormField
               control={form.control}
               name="nationalDocument"
@@ -112,10 +111,13 @@ export const NewCustomerForm = () => {
                 <FormItem>
                   <FormLabel>CPF do cliente</FormLabel>
                   <FormControl>
-                    <Input
+                    <MaskInput
                       {...field}
                       placeholder="CPF do cliente"
-                      maxLength={14}
+                      maskOptions={{
+                        mask: "***.***.***-**",
+                        replacement: "*",
+                      }}
                     />
                   </FormControl>
                   <FormMessage />

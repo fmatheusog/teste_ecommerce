@@ -21,7 +21,7 @@ import {
 
 import { CustomerPutArgs } from "@/args/customer-put-args";
 import { editCustomerSchema } from "@/features/orders/schemas";
-import { Input } from "@/components/ui/input";
+import { Input, MaskInput } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -110,7 +110,6 @@ export const EditCustomerModal = ({ customer, orderId }: Props) => {
               )}
             />
 
-            {/* TODO: máscara de CPF */}
             <FormField
               control={form.control}
               name="nationalDocument"
@@ -118,10 +117,13 @@ export const EditCustomerModal = ({ customer, orderId }: Props) => {
                 <FormItem>
                   <FormLabel>CPF do cliente</FormLabel>
                   <FormControl>
-                    <Input
+                    <MaskInput
                       {...field}
                       placeholder="CPF do cliente"
-                      maxLength={14}
+                      maskOptions={{
+                        mask: "***.***.***-**",
+                        replacement: "*",
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
