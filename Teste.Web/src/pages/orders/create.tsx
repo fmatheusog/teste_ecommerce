@@ -1,10 +1,18 @@
+import { CustomerPostArgs } from "@/args/customer-post-args";
 import { NewCustomerForm } from "@/features/orders/components/new-customer-form";
 import { NewOrderForm } from "@/features/orders/components/new-order-form";
 import { NewOrderItemsForm } from "@/features/orders/components/new-order-items-form";
 import { useCreateOrderStore } from "@/features/orders/stores/create-order-store";
+import { useEffect } from "react";
 
 export function CreateOrder() {
-  const { step } = useCreateOrderStore();
+  const { step, setCustomer, clearItems, resetStep } = useCreateOrderStore();
+
+  useEffect(() => {
+    setCustomer({} as CustomerPostArgs);
+    clearItems();
+    resetStep();
+  }, [clearItems, setCustomer, resetStep]);
 
   return (
     <div className="flex flex-col gap-y-8">

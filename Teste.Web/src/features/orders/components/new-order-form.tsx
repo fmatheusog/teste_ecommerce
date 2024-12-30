@@ -46,7 +46,7 @@ export const NewOrderForm = () => {
     mode: "onChange",
   });
 
-  const { customer, orderItems } = useCreateOrderStore();
+  const { customer, orderItems, prevStep } = useCreateOrderStore();
 
   const onSubmit = (values: z.infer<typeof createOrderSchema>) => {
     const { orderId, orderDate } = values;
@@ -134,15 +134,19 @@ export const NewOrderForm = () => {
               )}
             />
 
+            <div className="flex items-center gap-x-2">
+              <input
+                type="checkbox"
+                checked={simulateError}
+                onChange={() => setSimulateError(!simulateError)}
+              />
+              Simular erro
+            </div>
+
             <div className="flex justify-end gap-x-4">
-              <div className="flex items-center gap-x-2">
-                <input
-                  type="checkbox"
-                  checked={simulateError}
-                  onChange={() => setSimulateError(!simulateError)}
-                />
-                Simular erro
-              </div>
+              <Button onClick={prevStep} variant="secondary">
+                Voltar
+              </Button>
               <Button
                 disabled={isPendingProcessOrderSave}
                 className="w-32"

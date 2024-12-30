@@ -157,7 +157,7 @@ const AddItemModal = () => {
 };
 
 export const NewOrderItemsForm = () => {
-  const { orderItems, removeItem, nextStep } = useCreateOrderStore();
+  const { orderItems, removeItem, nextStep, prevStep } = useCreateOrderStore();
 
   return (
     <Card className="pt-4">
@@ -196,7 +196,9 @@ export const NewOrderItemsForm = () => {
         </p>
 
         <div className="flex gap-x-4 justify-end">
-          <Button variant="secondary">Voltar</Button>
+          <Button onClick={prevStep} variant="secondary">
+            Voltar
+          </Button>
           <Button onClick={nextStep}>Avançar</Button>
         </div>
       </CardContent>

@@ -5,6 +5,7 @@ import { OrderItemPostArgs } from "@/args/order-item-post-args";
 
 interface StoreProps {
   step: number;
+  resetStep: () => void;
   prevStep: () => void;
   nextStep: () => void;
   customer: CustomerPostArgs;
@@ -12,12 +13,14 @@ interface StoreProps {
   orderItems: OrderItemPostArgs[];
   addItem: (orderItem: OrderItemPostArgs) => void;
   removeItem: (itemId: number) => void;
+  clearItems: () => void;
 }
 
 export const useCreateOrderStore = create<StoreProps>((set) => ({
   step: 1,
-  nextStep: () => set((state) => ({ step: state.step + 1 })),
-  prevStep: () => set((state) => ({ step: state.step - 1 })),
+  resetStep: () => set((state) => ({ ...state, step: 1 })),
+  nextStep: () => set((state) => ({ ...state, step: state.step + 1 })),
+  prevStep: () => set((state) => ({ ...state, step: state.step - 1 })),
   customer: {} as CustomerPostArgs,
   setCustomer: (customer: CustomerPostArgs) =>
     set((state) => ({ ...state, customer })),
@@ -32,4 +35,10 @@ export const useCreateOrderStore = create<StoreProps>((set) => ({
       ...state,
       orderItems: state.orderItems.filter((i) => i.produtoId != itemId),
     })),
+  clearItems: () => {
+    set((state) => ({
+      ...state,
+      orderItems: [] as OrderItemPostArgs[],
+    }));
+  },
 }));
